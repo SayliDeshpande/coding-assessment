@@ -26,6 +26,10 @@ Both result in the string "51".
 Constraints:
 
 2 <= number.length <= 100
+
 number consists of digits from '1' to '9'.
+
 digit is a digit from '1' to '9'.
+
 digit occurs at least once in number.
+
