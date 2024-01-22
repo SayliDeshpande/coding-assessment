@@ -1,4 +1,4 @@
-package Google.minimumFallingPathSum;
+package maang.minimumFallingPathSum;
 
 public class Solution {
 

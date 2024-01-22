@@ -1,4 +1,4 @@
-package Google.reverseWordsInString;
+package maang.reverseWordsInString;
 
 public class Solution {
 
