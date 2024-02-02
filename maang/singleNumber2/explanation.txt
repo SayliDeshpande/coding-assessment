@@ -1,0 +1,105 @@
+Approach 5: Equation for Bitmask
+Intuition
+The drawback of Approach 4 was that we somewhat hard-coded it for 32-bit integers. Let's move towards a more generic solution.
+
+Note: This approach can be labeled as Advanced. Don't be discouraged if you aren't able to come up with it yourself. But make sure you read this approach.
+
+Before reading this approach, make sure you
+
+✔ are well-versed in the basics of Bit Manipulation. A quick refresher is given in intuition of Approach 4.
+✔ have an idea how bit-manipulation was used in Single Number.
+
+XOR could be used to detect the bit which appears an odd number of times. In other words, we can see a bit in a bitmask only if it appears an odd number of times. The following equation is at the heart of the XOR operation which we exhausted in Single Number.
+
+A⊕B=ABˉ+AˉB
+
+Can we logically derive a similar equation for bitmask for this problem?
+
+Here, we want to see a bit in a bitmask only if it appears 111 time. More precisely,
+
+If an integer appears 333 times, it should not be seen in the bitmask.
+
+If an integer appears 111 time, it should be seen in the bitmask.
+
+If an integer appears 222 times, it should not be seen in the bitmask, however, we need not worry about it because problem description guarantees no such case will be there.
+
+As XOR does modulo 222, we need to find a similar operation that does modulo 333. For this, let's have a few bitmasks such as seenZero, seenOnce, and seenTwice.
+
+If any bit in seenZero is set, it means that bit has appeared 000 times in all integers seen so far. Since we are doing modulo 333, this seenZero can also be interpreted as seenThrice. In other words, if a bit is set in seenZero, it can be the case that it has appeared multiple of 333 times.
+
+If any bit in seenOnce is set, it means that bit has appeared 1 (mod 3)1 \text{ (mod 3)}1 (mod 3) times in all integers seen so far.
+
+If any bit in seenTwice is set, it means that bit has appeared 2 (mod 3)2 \text{ (mod 3)}2 (mod 3) times in all integers seen so far.
+
+Initially, no integer has been seen, so both seenOnce and seenTwice are initialized to 000. seenZero will be initialized to 1111…11111111\ldots11111111…1111 (all bits set to 111), because all bits have been seen 000 times, initially.
+
+Do we really need seenZero?
+Turns out, we don't need seenZero. We can use seenOnce and seenTwice to represent seenZero. In other words, if a bit is not set in seenOnce, and not set in seenTwice, then it must be set in seenZero. This is because we must have seen it 0 (mod 3)0 \text{ (mod 3)}0 (mod 3) times.
+
+Note that ith bit will be set in ONE AND ONLY ONE among seenOnce, seenTwice, or trivially seenZero.
+
+Now, let's say we have an integer num in nums. We need to update seenOnce and seenTwice accordingly. Let's try to derive equations.
+
+For seenOnce,
+
+It should not be previously seen twice. So, seenTwice should not be set at that bit.
+
+If it was previously seen once, then it should be removed from seenOnce. If not, then it should be added to seenOnce. This can be done by XORing seenOnce with num. Either of them should be set, but not both. So, we can use XOR. In detail, if bit b
+
+is 0 in num and 0 in seenOnce, then b should be 0 in seenOnce, because we still haven't seen b in num.
+
+is 1 in num and 0 in seenOnce, then b should be 1 in seenOnce, because we have seen b in num.
+
+is 0 in num and 1 in seenOnce, then b should be 1. This is because although we haven't seen b in num, we have seen it previously, so it should be set.
+
+is 1 in num and 1 in seenOnce, then b should be 0. This is because we have seen b twice, so it should be removed from seenOnce.
+
+Hence, the equation for seenOnce is
+
+seenOnce = (seenOnce XOR num) AND (NOT seenTwice)
+
+For seenTwice
+
+It should be previously seen once. So, seenOnce should be set at that bit. But, if we have ALREADY updated seenOnce for this num then, it should not be in seenOnce. If the bit was set in seenOnce, then for this num, it was its first occurrence, and it should not be mistaken for a second occurrence.
+
+In other words, for the second occurrence, it must be removed from seenOnce while updating it using the seenOnce equation. Thus, it should NOT be in seenOnce while updating seenTwice.
+
+If it was previously seen twice, then it should be removed from seenTwice. If not, then it should be added to seenTwice. This can be done by XORing seenTwice with num. Either of them should be set, but not both. So, we can use XOR. In detail, if bit b
+
+is 0 in num and 0 in seenTwice, then b should be 0 in seenTwice, because we still haven't seen b in num.
+
+is 1 in num and 0 in seenTwice, then b should be 1 in seenTwice. This we are doing because the bit was not set in seenOnce, which implies that even after having 1 in num, seenOnce was NOT set at that bit, this must be because it was previously set at that bit, and removed because of 1 XOR 1 update of seenOnce. Thus, this must be the second occurrence of b.
+
+is 0 in num and 1 in seenTwice, then b should be 1. This is because although we haven't seen b in num, we have seen it previously, so it should be set.
+
+is 1 in num and 1 in seenTwice, then b should be 0. This is because we have seen b twice, so it should be removed from seenTwice.
+
+The equation for seenTwice is
+
+seenTwice = (seenTwice XOR num) AND (NOT seenOnce)
+The seenOnce on RHS of this equation is the updated seenOnce after analysis of num on the seenOnce bitmask.
+
+The crux of the approach is
+
+If a bit appears the first time, add it to seenOnce. It will not be added to seenTwice because of it's presence in seenOnce.
+
+If a bit appears a second time, remove it from seenOnce and add it to seenTwice.
+
+If a bit appears a third time, it won't be added to seenOnce because it is already present in seenTwice. After that it will be removed from seenTwice.
+
+The derived equations are just a way to implement this logic.
+
+Thus, after we are done traversing nums, we will have seenOnce set at all bits which are set in nums exactly once. This is what we wanted. So, we return seenOnce as the answer.
+
+As a note, seenTwo will be 0 at the end, because problem constraints guarantee that there will be no integer that appears 2 (mod 3)2 \text{ (mod 3)}2 (mod 3) times.
+
+Algorithm
+Initialize seenOnce and seenTwice to 0.
+
+Iterate through nums and update seenOnce and seenTwice using derived equations. Let num be the current integer.
+
+seenOnce = (seenOnce ^ num) & (~seenTwice): Update seenOnce using num. If num was previously seen once, then it will be removed from seenOnce. If not, then it will be added to seenOnce.
+
+seenTwice = (seenTwice ^ num) & (~seenOnce): Update seenTwice using num. If num was previously seen twice, then it will be removed from seenTwice. If not, then it will be added to seenTwice.
+
+Return seenOnce as the answer.
